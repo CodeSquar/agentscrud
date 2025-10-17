@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: crudagents-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: crudagents
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: passwordtest
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - crudagents-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:3000
+    container_name: crudagents-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://postgres:passwordtest@db:5432/crudagents
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: http://localhost:3000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - crudagents-network
+
+volumes:
+  db-data:
+
+networks:
+  crudagents-network:
+    driver: bridge
