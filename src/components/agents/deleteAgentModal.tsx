@@ -4,6 +4,8 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { Dialog, DialogDescription, DialogContent, DialogFooter, DialogHeader, DialogTrigger, DialogTitle } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { deleteAgentAction } from "@/lib/actions/agents";
+import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
+import { Frown } from "lucide-react";
 
 export default function DeleteAgentModal({ children, id }: { children: React.ReactNode, id: string }) {
     const [open, setOpen] = useState(false);
@@ -11,7 +13,7 @@ export default function DeleteAgentModal({ children, id }: { children: React.Rea
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {
-        if (state !== undefined && !isPending) {
+        if (state !== undefined && !isPending && state.success === true) {
             setOpen(false);
             formRef.current?.reset();
         }
@@ -30,9 +32,14 @@ export default function DeleteAgentModal({ children, id }: { children: React.Rea
                     </DialogDescription>
                 </DialogHeader>
                 {state.error && (
-                    <div className="text-sm text-red-500 bg-red-50 p-3 rounded-md">
-                        {state.error}
-                    </div>
+                    <Alert variant="destructive">
+                        <Frown className="size-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                            Hubo un error al eliminar el agente
+                        </AlertDescription>
+                    </Alert>
+                  
                 )}
                 <form ref={formRef} action={formAction}>
                     <input type="hidden" name="id" value={id} />

@@ -18,7 +18,7 @@ export default function EditAgentModal({ children, agent }: { children: React.Re
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {
-        if (state !== undefined && !isPending) {
+        if (state !== undefined && !isPending && state.success === true) {
             setOpen(false);
             formRef.current?.reset();
         }

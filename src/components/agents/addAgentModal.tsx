@@ -26,7 +26,7 @@ export default function AddAgentsModal() {
     const formRef = useRef<HTMLFormElement>(null);
 
     useEffect(() => {
-        if (state !== undefined && !isPending) {
+        if (state !== undefined && !isPending && state.success === true) {
             setOpen(false);
             formRef.current?.reset();
         }
