@@ -5,13 +5,11 @@ export default async function AdminMessagesPage() {
         cache: 'no-store'
     });
     const messagesData = await response.json();
- 
+
     return (
-        <div className="p-4 sm:p-8  gap-4  h-svh max-h-svh overflow-hidden flex flex-col">
-           <Chat 
-                messages={messagesData.data.messages} 
-                hasNextPage={messagesData.data.hasNextPage}
-                currentPage={messagesData.data.currentPage}
+        <div className="p-4 sm:p-8 gap-4 h-svh max-h-svh overflow-hidden flex flex-col">
+            <Chat
+                initialData={messagesData}
                 title="Admin Messages"
             />
         </div>

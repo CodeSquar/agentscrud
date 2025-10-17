@@ -4,7 +4,8 @@ import { Badge } from "../ui/badge";
 import MessageComponent from "./message";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { ArrowLeft, Send, Loader2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { ArrowLeft, Send, Loader2, Frown, RefreshCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Message } from "@prisma/client";
 import { io, Socket } from "socket.io-client";
@@ -12,22 +13,28 @@ import { useRouter } from "next/navigation";
 
 interface ChatProps {
     roomId?: string;
-    messages: Message[];
-    hasNextPage: boolean;
-    currentPage: number;
     title?: string;
+    initialData: {
+        success?: boolean;
+        error?: boolean;
+        data?: {
+            messages: Message[];
+            hasNextPage: boolean;
+            currentPage: number;
+        };
+    };
 }
 
-export default function Chat({ roomId = "global", messages: initialMessages, hasNextPage: initialHasNextPage, currentPage: initialCurrentPage, title = "Support chat" }: ChatProps) {
+export default function Chat({ roomId = "global", title = "Support chat", initialData }: ChatProps) {
     const router = useRouter();
 
     const [connected, setConnected] = useState(false);
     const [message, setMessage] = useState('');
-    const [messages, setMessages] = useState<Message[]>(initialMessages);
+    const [messages, setMessages] = useState<Message[]>(initialData.data?.messages || []);
     const [userId, setUserId] = useState<string>('');
     const [loadingOlder, setLoadingOlder] = useState(false);
-    const [hasNextPage, setHasNextPage] = useState(initialHasNextPage);
-    const [page, setPage] = useState(initialCurrentPage);
+    const [hasNextPage, setHasNextPage] = useState(initialData.data?.hasNextPage || false);
+    const [page, setPage] = useState(initialData.data?.currentPage || 1);
     const socketRef = useRef<Socket | null>(null);
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -118,6 +125,37 @@ export default function Chat({ roomId = "global", messages: initialMessages, has
             setLoadingOlder(false);
         }
     }
+
+    if (initialData.error) {
+        return (
+            <div className="gap-4 h-svh overflow-hidden flex flex-col">
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                        <ArrowLeft className="size-4" />
+                    </Button>
+                    <h2 className="text-xl font-bold">{title}</h2>
+                </div>
+                <div className="flex flex-col gap-2">
+                    <Alert variant="destructive">
+                        <Frown className="size-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>
+                            Hubo un error al cargar los mensajes
+                        </AlertDescription>
+                    </Alert>
+                    <Button variant="outline" onClick={() => window.location.reload()}>
+                        <RefreshCcw className="size-4 mr-2" />
+                        Reintentar
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!initialData.success) {
+        return null;
+    }
+
     return (
         <div className="gap-2 h-svh overflow-hidden flex flex-col">
             <div className="flex items-center gap-2">
